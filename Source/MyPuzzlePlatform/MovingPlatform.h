@@ -13,7 +13,7 @@ UCLASS()
 class MYPUZZLEPLATFORM_API AMovingPlatform : public AStaticMeshActor
 {
 	GENERATED_BODY()
-	
+
 
 public:
 	AMovingPlatform();
@@ -23,14 +23,20 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
-		float Speed = 20;
+	float Speed = 20;
 
 
 	UPROPERTY(EditAnywhere, Meta = (MakeEditWidget = ture))
-		FVector TargetLocation;
+	FVector TargetLocation;
 
+	void AddActiveTrigger();
+	void RemoveActiveTrigger();
 
 private:
 	FVector GlobalStartLocation;
 	FVector GlobalTargetLocation;
+
+	UPROPERTY(EditAnywhere)
+	int ActiveTriggers = 1;
+
 };
