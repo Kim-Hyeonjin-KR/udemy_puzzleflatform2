@@ -13,6 +13,7 @@ class AMyPuzzlePlatformGameMode : public AGameModeBase
 
 public:
 	AMyPuzzlePlatformGameMode();
+
 };
 
 
