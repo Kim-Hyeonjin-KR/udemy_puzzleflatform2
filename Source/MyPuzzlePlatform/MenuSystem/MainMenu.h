@@ -19,26 +19,57 @@ class MYPUZZLEPLATFORM_API UMainMenu : public UUserWidget
 
 public:
 	void SetMenuInterface(IMenuInterface* _MenuInterface);
-
+	void Setup();
+	void Teardown();
 
 protected:
 	virtual bool Initialize();
 
 private:
+
+	//Button
 	UPROPERTY(meta = (BindWidget))
 	class UButton* HostButton;
 
 	UPROPERTY(meta = (BindWidget))
 	class UButton* JoinButton;
 
+	UPROPERTY(meta = (BindWidget))
+	class UButton* CancleJoinMenuButton;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* JoinGame;
+
+
+	//WidgetSwitcher
+	UPROPERTY(meta = (BindWidget))
+	class UWidgetSwitcher* MainMenuWidgetSwitcher;
+
+	//Widget
+	UPROPERTY(meta = (BindWidget))
+	class UWidget* MainMenu;
+
+	UPROPERTY(meta = (BindWidget))
+	class UWidget* JoinMenu;
+
+	//EditableTextBox
+	UPROPERTY(meta = (BindWidget))
+	class UEditableTextBox* IPAdressField;
+
+
 
 	UFUNCTION()
 	void HostServer();
-	
+
 	UFUNCTION()
 	void JoinServer();
 
-	IMenuInterface* MenuInterface;
+	UFUNCTION()
+	void OpenJoinMenu();
+	
+	UFUNCTION()
+	void OpenMainMenu();
 
+	IMenuInterface* MenuInterface;
 
 };
