@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "MenuInterface.h"
+#include "MenuWidget.h"
 
 #include "MainMenu.generated.h"
 
@@ -13,14 +12,12 @@
  * 
  */
 UCLASS()
-class MYPUZZLEPLATFORM_API UMainMenu : public UUserWidget
+class MYPUZZLEPLATFORM_API UMainMenu : public UMenuWidget
 {
 	GENERATED_BODY()
 
 public:
-	void SetMenuInterface(IMenuInterface* _MenuInterface);
-	void Setup();
-	void Teardown();
+
 
 protected:
 	virtual bool Initialize();
@@ -70,6 +67,6 @@ private:
 	UFUNCTION()
 	void OpenMainMenu();
 
-	IMenuInterface* MenuInterface;
+
 
 };

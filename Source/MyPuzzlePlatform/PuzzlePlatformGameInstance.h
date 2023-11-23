@@ -25,6 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadMenu();
 
+	UFUNCTION(BlueprintCallable)
+	void LoadInGameMenu();
+
 	UFUNCTION(Exec)
 	void Host();
 
@@ -33,6 +36,8 @@ public:
 
 private:
 	TSubclassOf<class UUserWidget> MainMenu_Class;
+	TSubclassOf<class UUserWidget> InGameMenu_Class;
+
 
 	class UMainMenu* Menu;
 };
