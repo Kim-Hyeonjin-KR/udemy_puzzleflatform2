@@ -6,8 +6,16 @@
 #include "Engine/Engine.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
+
+#include "OnlineSessionSettings.h"
+#include "Interfaces/OnlineSessionInterface.h"
+
+
 #include "MenuSystem/MainMenu.h"
 #include "MenuSystem/MenuWidget.h"
+
+const static FName SESSION_NAME = TEXT("My Session Game");
+
 
 
 UPuzzlePlatformGameInstance::UPuzzlePlatformGameInstance(const FObjectInitializer& ObjectInitializer)
@@ -32,10 +40,30 @@ void UPuzzlePlatformGameInstance::Init()
 {
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance Initttttttttttttt"));
 
+	//온라인 서브시스템을 모듈에서 가져옴
+	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
+	if (!ensure(Subsystem != nullptr)) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not Found Online Subsystem"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Online Subsystem Name : %s"), *Subsystem->GetSubsystemName().ToString());
+
+		//세션포인터를 선언하고 서브시스템에서 세션인터페이스를 가져와서 넣음.
+		SessionInterface = Subsystem->GetSessionInterface();
+		if (SessionInterface.IsValid())
+		{
+			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformGameInstance::OnCreateSessionComplete);
+			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformGameInstance::OnDestroySessionComplete);
+		}
+	}
+
+
 	UE_LOG(LogTemp, Warning, TEXT("Found Class Name : %s"), *MainMenu_Class->GetName());
 }
 
-void UPuzzlePlatformGameInstance::LoadMenu()
+void UPuzzlePlatformGameInstance::LoadMenuWidget()
 {
 	if (!ensure(MainMenu_Class != nullptr)) return;
 	
@@ -57,13 +85,18 @@ void UPuzzlePlatformGameInstance::LoadInGameMenu()
 	InGameMenu->SetMenuInterface(this);
 }
 
-void UPuzzlePlatformGameInstance::Host()
+void UPuzzlePlatformGameInstance::OnCreateSessionComplete(FName SessionName, bool Success)
 {
+	if (!Success)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Could not creat session"));
+		return;
+	}
+
 	if (Menu != nullptr)
 	{
 		Menu->Teardown();
 	}
-
 
 	UEngine* Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
@@ -74,8 +107,41 @@ void UPuzzlePlatformGameInstance::Host()
 	if (!ensure(World != nullptr)) return;
 
 	World->ServerTravel("/Game/ThirdPerson/Maps/ThirdPersonMap?listen");
+}
 
+//DestroySession이 완료되면 자동으로 콜백을 받고 함수가 실행됨.
+void UPuzzlePlatformGameInstance::OnDestroySessionComplete(FName SessionName, bool Success)
+{
+	if (Success)
+	{
+		CreateSession();
+	}
+}
 
+void UPuzzlePlatformGameInstance::CreateSession()
+{
+	if (SessionInterface.IsValid())
+	{
+		FOnlineSessionSettings SessionSettings;
+		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
+	}
+}
+
+void UPuzzlePlatformGameInstance::Host()
+{
+	if (SessionInterface.IsValid())
+	{
+		auto ExistingSession =  SessionInterface->GetNamedSession(SESSION_NAME);
+		if (ExistingSession != nullptr)
+		{
+			SessionInterface->DestroySession(SESSION_NAME);
+		}
+		else
+		{
+			CreateSession();
+		}
+
+	}
 }
 
 void UPuzzlePlatformGameInstance::Join(const FString& Address)
