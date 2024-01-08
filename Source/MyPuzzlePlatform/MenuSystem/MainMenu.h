@@ -17,12 +17,14 @@ class MYPUZZLEPLATFORM_API UMainMenu : public UMenuWidget
 	GENERATED_BODY()
 
 public:
-
+	UMainMenu(const FObjectInitializer & ObjectInitializer);
 
 protected:
 	virtual bool Initialize();
 
 private:
+	
+	TSubclassOf<class UUserWidget> ServerRowClass;
 
 	//Button
 	UPROPERTY(meta = (BindWidget))
@@ -54,7 +56,12 @@ private:
 
 	//EditableTextBox
 	UPROPERTY(meta = (BindWidget))
-	class UEditableTextBox* IPAdressField;
+	class UPanelWidget* ServerList;
+
+	//UPROPERTY(meta = (BindWidget))
+	//class UTextBox* SessionText;
+
+
 
 
 

@@ -52,10 +52,25 @@ void UPuzzlePlatformGameInstance::Init()
 
 		//세션포인터를 선언하고 서브시스템에서 세션인터페이스를 가져와서 넣음.
 		SessionInterface = Subsystem->GetSessionInterface();
+
 		if (SessionInterface.IsValid())
 		{
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformGameInstance::OnCreateSessionComplete);
 			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformGameInstance::OnDestroySessionComplete);
+			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPuzzlePlatformGameInstance::OnFindSessionsComplete);
+
+
+			SessionSearch = MakeShareable(new FOnlineSessionSearch());
+
+			if (SessionSearch.IsValid())
+			{
+				SessionSearch->bIsLanQuery = true;	// LAN사용 여부
+				//SessionSearch->QuerySettings.Get()
+
+				UE_LOG(LogTemp, Warning, TEXT("Starting Find Session"));
+				SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
+			}
+
 		}
 	}
 
@@ -118,14 +133,34 @@ void UPuzzlePlatformGameInstance::OnDestroySessionComplete(FName SessionName, bo
 	}
 }
 
+
+void UPuzzlePlatformGameInstance::OnFindSessionsComplete(bool Success)
+{
+	if (Success && SessionSearch.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Finished Find Session"));
+		for (const FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Find Session is %s"), *SearchResult.GetSessionIdStr());
+		}
+	}
+
+}
+
 void UPuzzlePlatformGameInstance::CreateSession()
 {
 	if (SessionInterface.IsValid())
 	{
 		FOnlineSessionSettings SessionSettings;
+
+		SessionSettings.bIsLANMatch = true;
+		SessionSettings.NumPublicConnections = 2;
+		SessionSettings.bShouldAdvertise = true;
+
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
 }
+
 
 void UPuzzlePlatformGameInstance::Host()
 {
