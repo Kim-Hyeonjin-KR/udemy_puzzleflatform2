@@ -11,6 +11,7 @@
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
+#include "Components/TextBlock.h"
 
 //개발자 생성 인클루드들
 #include "ServerRow.h"
@@ -27,6 +28,8 @@ UMainMenu::UMainMenu(const FObjectInitializer & ObjectIniterlizer)
 
 
 }
+
+
 
 
 bool UMainMenu::Initialize()
@@ -65,23 +68,37 @@ void UMainMenu::HostServer()
 	UE_LOG(LogTemp, Warning, TEXT("Hosting Server"));
 }
 
-void UMainMenu::JoinServer()
+void UMainMenu::SetServerList(TArray<FString> ServerNames)
 {
-	if (!ensure(MenuInterface != nullptr)) return;
-
-	//if (!ensure(IPAdressField != nullptr)) return;
-	//const FString& Adress = IPAdressField->GetText().ToString();
-	//MenuInterface->Join(Adress);
-
 	UWorld* Temp_World = this->GetWorld();
 	if (!ensure(Temp_World != nullptr)) return;
 
-	UServerRow* Child_ServerRow = CreateWidget<UServerRow>(Temp_World, ServerRowClass);
-	if (!ensure(Child_ServerRow != nullptr)) return;
+	ServerList->ClearChildren();
 
-	ServerList->AddChild(Child_ServerRow);
+	for (const FString& ServerName : ServerNames)
+	{
+		UServerRow* Child_ServerRow = CreateWidget<UServerRow>(Temp_World, ServerRowClass);
+		if (!ensure(Child_ServerRow != nullptr)) return;
+
+		Child_ServerRow->ServerName->SetText(FText::FromString(ServerName));
+
+		ServerList->AddChild(Child_ServerRow);
+
+	}
 
 
+
+}
+
+void UMainMenu::JoinServer()
+{
+	if (!ensure(MenuInterface != nullptr)) return;
+	{
+		//if (!ensure(IPAdressField != nullptr)) return;
+		//const FString& Adress = IPAdressField->GetText().ToString();
+		MenuInterface->Join("");
+	}
+	
 }
 
 

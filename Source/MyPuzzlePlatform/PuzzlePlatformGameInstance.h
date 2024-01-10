@@ -30,10 +30,14 @@ public:
 	void LoadInGameMenu();
 
 	UFUNCTION(Exec)
-	void Host();
+	void Host() override;
 
 	UFUNCTION(Exec)
-	void Join(const FString& Address);
+	void Join(const FString& Address) override;
+
+	virtual void LoadMainMenu() override;
+
+	virtual void RefreshServerList() override;
 
 private:
 	TSubclassOf<class UUserWidget> MainMenu_Class;
