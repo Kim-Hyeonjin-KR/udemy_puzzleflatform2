@@ -75,46 +75,53 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 
 	ServerList->ClearChildren();
 
+	uint32 i = 0;
 	for (const FString& ServerName : ServerNames)
 	{
 		UServerRow* Child_ServerRow = CreateWidget<UServerRow>(Temp_World, ServerRowClass);
 		if (!ensure(Child_ServerRow != nullptr)) return;
 
 		Child_ServerRow->ServerName->SetText(FText::FromString(ServerName));
+		Child_ServerRow->Setup(this, i);
+		++i;
 
 		ServerList->AddChild(Child_ServerRow);
-
 	}
+}
 
-
+void UMainMenu::SelectIndex(uint32 Index)
+{
+	SelectedIndex = Index;
 
 }
 
 void UMainMenu::JoinServer()
 {
-	if (!ensure(MenuInterface != nullptr)) return;
+	if (SelectedIndex.IsSet() && (MenuInterface != nullptr))
 	{
-		//if (!ensure(IPAdressField != nullptr)) return;
-		//const FString& Adress = IPAdressField->GetText().ToString();
-		MenuInterface->Join("");
+		UE_LOG(LogTemp, Warning, TEXT("Selected Index is %d"), SelectedIndex.GetValue());
+		MenuInterface->Join(SelectedIndex.GetValue());
+
 	}
-	
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Selected Index is not set"));
+	}
 }
 
 
 
 void UMainMenu::OpenJoinMenu()
 {
-	if (!ensure(MenuInterface != nullptr)) return;
-	//MenuInterface->Join(const FString & Address);
-
 	if (!ensure(MainMenuWidgetSwitcher != nullptr)) return;
 	if (!ensure(JoinMenu != nullptr)) return;
 	
 	MainMenuWidgetSwitcher->SetActiveWidget(JoinMenu);
-
-
 	UE_LOG(LogTemp, Warning, TEXT("Open Join Menu"));
+
+	if (!ensure(MenuInterface != nullptr)) return;
+	MenuInterface->RefreshServerList();
+	UE_LOG(LogTemp, Warning, TEXT("Call Refresh Server List Function On MainMenu.Cpp"));
 }
 
 

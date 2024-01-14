@@ -7,6 +7,7 @@
 
 #include "MenuSystem/MenuInterface.h"
 #include "OnlineSubsystem.h"
+#include "Interfaces/OnlineSessionInterface.h"
 
 #include "PuzzlePlatformGameInstance.generated.h"
 
@@ -14,7 +15,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class MYPUZZLEPLATFORM_API UPuzzlePlatformGameInstance : public UGameInstance, public IMenuInterface
 {
 	GENERATED_BODY()
@@ -33,21 +34,15 @@ public:
 	void Host() override;
 
 	UFUNCTION(Exec)
-	void Join(const FString& Address) override;
+	void Join(uint32 _index) override;
 
 	virtual void LoadMainMenu() override;
-
-	virtual void RefreshServerList() override;
+	void RefreshServerList() override;
 
 private:
+
 	TSubclassOf<class UUserWidget> MainMenu_Class;
 	TSubclassOf<class UUserWidget> InGameMenu_Class;
-
-	void OnCreateSessionComplete(FName SessionName, bool Success);
-	void OnDestroySessionComplete(FName SessionName, bool Success);
-	void OnFindSessionsComplete(bool Success);
-	void CreateSession();
-
 
 	IOnlineSessionPtr SessionInterface;
 
@@ -55,4 +50,11 @@ private:
 	TSharedPtr< class FOnlineSessionSearch > SessionSearch;
 
 	class UMainMenu* Menu;
+
+	void OnCreateSessionComplete(FName SessionName, bool Success);
+	void OnDestroySessionComplete(FName SessionName, bool Success);
+	void OnFindSessionsComplete(bool Success);
+	void OnJoinSessionsComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+
+	void CreateSession();
 };

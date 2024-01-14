@@ -21,6 +21,8 @@ public:
 
 	void SetServerList(TArray<FString> ServerNames);
 
+	void SelectIndex(uint32 Index);
+
 protected:
 	virtual bool Initialize();
 
@@ -63,10 +65,6 @@ private:
 	//UPROPERTY(meta = (BindWidget))
 	//class UTextBox* SessionText;
 
-
-
-
-
 	UFUNCTION()
 	void HostServer();
 
@@ -81,5 +79,10 @@ private:
 
 	UFUNCTION()
 	void ExitGame();
+
+
+	//TOptional은 구조체이다
+	//IsSet, Emplace, GetValue 같은 함수를 활용하면 인자값의 초기화 여부나 추가를 보다 명확하게 코드상으로 처리할 수 있다는 장점이 있다 
+	TOptional<uint32> SelectedIndex;
 
 };
