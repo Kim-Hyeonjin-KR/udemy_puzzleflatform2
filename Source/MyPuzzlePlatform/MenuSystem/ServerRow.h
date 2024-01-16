@@ -20,6 +20,18 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ServerName;
 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* HostUser;
+
+	
+	//UPROPERTY(meta = (BindWidget))
+	//class UTextBlock* ConnectionFraction;	//Fraction 당원, 조직의 일원, 분수
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* CurrentUser;
+
+
+	UPROPERTY(BlueprintReadOnly)
+	bool Selected = false;
 
 	void Setup(class UMainMenu* _Parent, uint32 _Index);
 

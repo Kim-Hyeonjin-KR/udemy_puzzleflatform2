@@ -68,7 +68,7 @@ void UMainMenu::HostServer()
 	UE_LOG(LogTemp, Warning, TEXT("Hosting Server"));
 }
 
-void UMainMenu::SetServerList(TArray<FString> ServerNames)
+void UMainMenu::SetServerList(TArray<FServerData> ServerNames)
 {
 	UWorld* Temp_World = this->GetWorld();
 	if (!ensure(Temp_World != nullptr)) return;
@@ -76,12 +76,17 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 	ServerList->ClearChildren();
 
 	uint32 i = 0;
-	for (const FString& ServerName : ServerNames)
+	for (const FServerData& ServerData : ServerNames)
 	{
 		UServerRow* Child_ServerRow = CreateWidget<UServerRow>(Temp_World, ServerRowClass);
 		if (!ensure(Child_ServerRow != nullptr)) return;
 
-		Child_ServerRow->ServerName->SetText(FText::FromString(ServerName));
+		Child_ServerRow->ServerName->SetText(FText::FromString(ServerData.Name));
+		Child_ServerRow->HostUser->SetText(FText::FromString(ServerData.HostUserName));
+
+		FString CurrentPlayerText = FString::Printf(TEXT("%d / %d"), ServerData.CurrentPlayers, ServerData.MaxPlayers);
+		Child_ServerRow->CurrentUser->SetText(FText::FromString(CurrentPlayerText));
+
 		Child_ServerRow->Setup(this, i);
 		++i;
 
@@ -92,7 +97,22 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 void UMainMenu::SelectIndex(uint32 Index)
 {
 	SelectedIndex = Index;
+	UpdateChildren();
+}
 
+void UMainMenu::UpdateChildren()
+{
+	for (int32 i = 0; i < ServerList->GetChildrenCount(); i++)
+	{
+
+		//GetChildAt이 반환하는 값은 UWidget* 이기 때문에 UServerRow로 변환하여 넣어준다.
+		UServerRow* Row = Cast<UServerRow>(ServerList->GetChildAt(i));
+
+		if (Row != nullptr)
+		{
+			Row->Selected = (SelectedIndex.IsSet() && (SelectedIndex.GetValue() == i));
+		}
+	}
 }
 
 void UMainMenu::JoinServer()

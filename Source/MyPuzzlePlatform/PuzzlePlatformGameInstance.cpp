@@ -10,6 +10,8 @@
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 
+#include "Online/OnlineSessionNames.h"
+
 
 #include "MenuSystem/MainMenu.h"
 #include "MenuSystem/MenuWidget.h"
@@ -31,12 +33,10 @@ UPuzzlePlatformGameInstance::UPuzzlePlatformGameInstance(const FObjectInitialize
 
 	MainMenu_Class = WBP_MainMenuClass.Class;
 
-
 	static ConstructorHelpers::FClassFinder<UUserWidget> WBP_InGameMenuClass(TEXT("/Game/MenuSystem/WBP_InGameMenu"));
 	if (!ensure(WBP_InGameMenuClass.Class != nullptr)) return;
 
 	InGameMenu_Class = WBP_InGameMenuClass.Class;
-	
 }
 
 void UPuzzlePlatformGameInstance::Init()
@@ -64,13 +64,10 @@ void UPuzzlePlatformGameInstance::Init()
 
 			//RefreshServerList();
 		}
-
 	}
 	else
 	{
-
 		UE_LOG(LogTemp, Warning, TEXT("Not Found Online Subsystem"));
-
 	}
 
 	//UE_LOG(LogTemp, Warning, TEXT("Found Class Name : %s"), *MainMenu_Class->GetName());
@@ -83,8 +80,6 @@ void UPuzzlePlatformGameInstance::LoadMenuWidget()
 {
 
 	UE_LOG(LogTemp, Warning, TEXT("Starting Load Menu Widget Function"));
-
-
 
 	if (!ensure(MainMenu_Class != nullptr))
 	{
@@ -116,7 +111,6 @@ void UPuzzlePlatformGameInstance::Host()
 		auto ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
 		if (ExistingSession != nullptr)
 		{
-
 			UE_LOG(LogTemp, Warning, TEXT("Destroy Session Starting"));
 			SessionInterface->DestroySession(SESSION_NAME);
 		}
@@ -133,12 +127,20 @@ void UPuzzlePlatformGameInstance::CreateSession()
 	if (SessionInterface.IsValid())
 	{
 		FOnlineSessionSettings SessionSettings;
-
+		if (IOnlineSubsystem::Get()->GetSubsystemName() == "NULL")
+		{
+			SessionSettings.bIsLANMatch = true;
+		}
+		else
+		{
+			SessionSettings.bIsLANMatch = false;
+		}
 		//랜 서버로 매칭 여부
-		SessionSettings.bIsLANMatch = true;
 		SessionSettings.NumPublicConnections = 2;
 		//온라인 세션에서 검색할 경우 공개될 지 여부
 		SessionSettings.bShouldAdvertise = true;
+		//인터넷 세션 (LobbySession, InternetSession)을 구성하기 위해 필요한 설정. 위의 SessionSettings.bIsLANMatch이 false일 경우에 작동하도록 설계되어 있으므로 반드시 꺼주자.
+		SessionSettings.bUsesPresence = true;
 
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
@@ -188,8 +190,9 @@ void UPuzzlePlatformGameInstance::RefreshServerList()
 
 	if (SessionSearch.IsValid())
 	{
-		SessionSearch->bIsLanQuery = true;	// LAN사용 여부
-		//SessionSearch->QuerySettings.Get()
+		//SessionSearch->bIsLanQuery = true;	// LAN사용 여부
+		SessionSearch->MaxSearchResults = 1000;
+		SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
 		UE_LOG(LogTemp, Warning, TEXT("Starting Find Session"));
 		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
@@ -205,21 +208,25 @@ void UPuzzlePlatformGameInstance::OnFindSessionsComplete(bool Success)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Finished Find Session"));
 
-		TArray<FString> ServerNames;
+		TArray<FServerData> ServerNames;
 
 		for (const FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Find Session is %s"), *SearchResult.GetSessionIdStr());
-			ServerNames.Add(SearchResult.GetSessionIdStr());
+
+			FServerData Data;
+			Data.Name = SearchResult.GetSessionIdStr();
+			Data.MaxPlayers = SearchResult.Session.SessionSettings.NumPublicConnections;
+			Data.CurrentPlayers = Data.MaxPlayers - SearchResult.Session.NumOpenPublicConnections;	// SearchResult.Session.NumOpenPublicConnections == 접속 가능한 비어있는 세션의 수
+
+			Data.HostUserName = SearchResult.Session.OwningUserName;
+
+			ServerNames.Add(Data);
 		}
 
 		Menu->SetServerList(ServerNames);
-
 	}
 }
-
-
-
 
 void UPuzzlePlatformGameInstance::Join(uint32 _index)
 {
@@ -256,8 +263,6 @@ void UPuzzlePlatformGameInstance::OnJoinSessionsComplete(FName SessionName, EOnJ
 	if (!ensure(PlayerController != nullptr)) return;
 
 	PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
-
-
 }
 
 void UPuzzlePlatformGameInstance::LoadMainMenu()

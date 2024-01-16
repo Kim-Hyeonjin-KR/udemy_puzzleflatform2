@@ -40,7 +40,6 @@ public:
 	void RefreshServerList() override;
 
 private:
-
 	TSubclassOf<class UUserWidget> MainMenu_Class;
 	TSubclassOf<class UUserWidget> InGameMenu_Class;
 

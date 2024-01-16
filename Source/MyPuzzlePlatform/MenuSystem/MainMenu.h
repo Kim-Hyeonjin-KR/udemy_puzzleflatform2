@@ -11,6 +11,22 @@
 /**
  * 
  */
+
+
+USTRUCT()
+struct FServerData
+{
+	GENERATED_BODY()
+
+	FString Name;
+	uint16 CurrentPlayers;
+	uint16 MaxPlayers;
+	FString HostUserName;
+
+};
+
+
+
 UCLASS()
 class MYPUZZLEPLATFORM_API UMainMenu : public UMenuWidget
 {
@@ -19,7 +35,7 @@ class MYPUZZLEPLATFORM_API UMainMenu : public UMenuWidget
 public:
 	UMainMenu(const FObjectInitializer & ObjectInitializer);
 
-	void SetServerList(TArray<FString> ServerNames);
+	void SetServerList(TArray<FServerData> ServerNames);
 
 	void SelectIndex(uint32 Index);
 
@@ -85,4 +101,5 @@ private:
 	//IsSet, Emplace, GetValue 같은 함수를 활용하면 인자값의 초기화 여부나 추가를 보다 명확하게 코드상으로 처리할 수 있다는 장점이 있다 
 	TOptional<uint32> SelectedIndex;
 
+	void UpdateChildren();
 };
